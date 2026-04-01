@@ -4,9 +4,8 @@ using StockMaster.Negocio;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Usamos la cadena de conexión optimizada para puertos de nube (6543)
-// Agregamos No Enclave para mayor compatibilidad
-var connectionString = "Host=db.qfkvvqotreprdkgqzdpy.supabase.co;Port=6543;Database=postgres;Username=postgres;Password=y4fMQfZbmAUAegBq;SslMode=Require;Trust Server Certificate=true;Pooling=false;Timeout=60;Command Timeout=60";
+// CORRECCIÃ“N: Usamos el Host del Pooler y el Usuario con el ID del proyecto para que funcione en Render (IPv4)
+var connectionString = "Host=aws-1-us-east-2.pooler.supabase.com;Port=6543;Database=postgres;Username=postgres.qfkvvqotreprdkgqzdpy;Password=y4fMQfZbmAUAegBq;SslMode=Require;Trust Server Certificate=true;";
 
 builder.Services.AddDbContext<ApplicationDbContext>(options => 
     options.UseNpgsql(connectionString));
