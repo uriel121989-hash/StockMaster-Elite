@@ -10,68 +10,60 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         :root { --primary: #3b82f6; --dark: #0f172a; --success: #00ff88; --danger: #ff0055; --warning: #ffcc00; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f4f8; color: #1e293b; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f4f8; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; }
         .navbar { background: var(--dark); border-bottom: 4px solid var(--primary); padding: 15px 0; }
-        
-        /* SEMÁFORO ESTILO NEÓN - IMPOSIBLE DE NO VER */
-        .status-box {
-            display: flex !important;
-            align-items: center;
-            background: #000;
-            padding: 10px 25px;
-            border-radius: 50px;
-            border: 2px solid var(--primary);
-            box-shadow: 0 0 15px var(--primary);
-        }
-        .neon-dot {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            margin-right: 15px;
-            box-shadow: 0 0 10px white;
-        }
-        .status-label { font-size: 0.9rem; font-weight: 900; letter-spacing: 2px; }
-
-        .card-custom { background: white; border-radius: 25px; border: none; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .btn-add { background: var(--primary); color: white; border-radius: 15px; font-weight: 700; padding: 12px 25px; border: none; transition: 0.3s; }
-        .btn-add:hover { background: #2563eb; transform: scale(1.05); }
-        footer { background: var(--dark); color: white; padding: 2rem 0; margin-top: 5rem; border-top: 5px solid var(--primary); }
+        .status-box { display: flex; align-items: center; background: #000; padding: 10px 25px; border-radius: 50px; border: 2px solid var(--primary); box-shadow: 0 0 15px var(--primary); }
+        .neon-dot { width: 12px; height: 12px; border-radius: 50%; margin-right: 12px; }
+        .status-label { font-size: 0.8rem; font-weight: 900; letter-spacing: 1px; }
+        .card-custom { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); height: 100%; }
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); display: none; z-index: 9999; flex-direction: column; align-items: center; justify-content: center; color: white; backdrop-filter: blur(10px); }
+        footer { background: var(--dark); color: white; padding: 30px 0; margin-top: auto; border-top: 5px solid var(--primary); }
     </style>
 </head>
 <body>
 
+    <!-- CARGADOR ELITE -->
+    <div id="loadingOverlay">
+        <div class="spinner-grow text-primary mb-3" style="width: 4rem; height: 4rem;"></div>
+        <h4 id="loadingText" class="fw-bold text-uppercase">Sincronizando...</h4>
+        <div class="progress w-50 mt-3" style="height: 12px; background: rgba(255,255,255,0.1); border-radius: 10px;">
+            <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated bg-success" style="width: 0%"></div>
+        </div>
+        <p id="progressPercent" class="mt-2 fw-bold text-success fs-5">0%</p>
+    </div>
+
+    <!-- NAVBAR -->
     <nav class="navbar navbar-dark sticky-top">
         <div class="container d-flex justify-content-between align-items-center">
-            <a class="navbar-brand fw-bold fs-3" href="#"><i class="fas fa-bolt text-primary"></i> ELITE</a>
-            
-            <!-- EL SEMÁFORO EN EL CENTRO -->
+            <a class="navbar-brand fw-bold fs-3" href="#"><i class="fas fa-bolt text-primary"></i> ELITE STOCK</a>
             <div class="status-box">
                 <div id="dbStatusDot" class="neon-dot" style="background-color: var(--warning);"></div>
-                <span id="dbStatusText" class="status-label" style="color: var(--warning);">VERIFICANDO...</span>
+                <span id="dbStatusText" class="status-label" style="color: var(--warning);">CONECTANDO...</span>
             </div>
-
-            <span class="badge bg-primary p-2 d-none d-md-block">Uriel Zagada Dominguez</span>
+            <div class="text-white d-none d-md-block opacity-75">
+                <small class="fw-bold"><i class="fas fa-user-circle"></i> URIEL ZAGADA DOMINGUEZ</small>
+            </div>
         </div>
     </nav>
 
-    <div class="container mt-5">
+    <div class="container mt-5 mb-5">
         <div class="row g-4">
             <div class="col-lg-8">
                 <div class="card-custom">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h3 class="fw-bold m-0">Inventario Cloud</h3>
+                        <h3 class="fw-bold m-0"><i class="fas fa-warehouse text-primary me-2"></i>Inventario Cloud</h3>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalAdd"><i class="fas fa-plus"></i></button>
-                            <button class="btn btn-success rounded-3 text-white" onclick="exportar()"><i class="fas fa-download"></i></button>
+                            <button class="btn btn-primary rounded-3 px-4 shadow" data-bs-toggle="modal" data-bs-target="#modalAdd"><i class="fas fa-plus"></i></button>
+                            <button class="btn btn-success rounded-3 px-4 shadow" onclick="exportar()"><i class="fas fa-file-export"></i></button>
                         </div>
                     </div>
                     <div class="table-responsive">
-                        <table class="table align-middle">
+                        <table class="table table-hover align-middle">
                             <thead class="table-light">
-                                <tr><th>Producto</th><th>Precio</th><th>Stock</th><th class="text-end">Acción</th></tr>
+                                <tr><th>Producto</th><th>Categoría</th><th>Precio</th><th>Stock</th><th class="text-end">Acciones</th></tr>
                             </thead>
                             <tbody id="lista">
-                                <tr><td colspan="4" class="text-center py-5">Cargando...</td></tr>
+                                <tr><td colspan="5" class="text-center py-5">Cargando datos de Supabase...</td></tr>
                             </tbody>
                         </table>
                     </div>
@@ -79,36 +71,50 @@
             </div>
             <div class="col-lg-4">
                 <div class="card-custom text-center">
-                    <h5 class="fw-bold mb-4">STOCK VISUAL</h5>
-                    <canvas id="miGrafico"></canvas>
-                    <hr>
-                    <button class="btn btn-outline-primary w-100 fw-bold" onclick="document.getElementById('fileIn').click()">IMPORTAR EXCEL</button>
+                    <h5 class="fw-bold mb-4"><i class="fas fa-chart-pie me-2"></i>NIVELES DE STOCK</h5>
+                    <div style="max-width: 250px; margin: auto;">
+                        <canvas id="miGrafico"></canvas>
+                    </div>
+                    <hr class="my-4">
+                    <button class="btn btn-outline-primary w-100 fw-bold py-3" onclick="document.getElementById('fileIn').click()">
+                        <i class="fas fa-file-excel me-2"></i>IMPORTAR EXCEL
+                    </button>
                     <input type="file" id="fileIn" hidden onchange="importar()">
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL -->
+    <!-- MODAL NUEVO PRODUCTO -->
     <div class="modal fade" id="modalAdd" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-4 border-0" style="border-radius: 30px;">
-            <h4 class="fw-bold mb-4">Nuevo Producto</h4>
-            <input type="text" id="addNombre" class="form-control mb-3" placeholder="Nombre">
-            <input type="text" id="addCat" class="form-control mb-3" placeholder="Categoría">
-            <input type="number" id="addPre" class="form-control mb-3" placeholder="Precio">
-            <input type="number" id="addSto" class="form-control mb-3" placeholder="Stock">
-            <button class="btn btn-add w-100" onclick="guardar()">GUARDAR</button>
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-4 border-0 shadow-lg" style="border-radius: 25px;">
+            <h4 class="fw-bold mb-4 text-center">Nuevo Producto Elite</h4>
+            <div class="mb-3"><label class="form-label fw-bold">Nombre</label><input type="text" id="addNombre" class="form-control rounded-3" placeholder="Ej: Panel Solar 450W"></div>
+            <div class="mb-3"><label class="form-label fw-bold">Categoría</label><input type="text" id="addCat" class="form-control rounded-3" placeholder="Ej: Paneles"></div>
+            <div class="row"><div class="col-6 mb-3"><label class="form-label fw-bold">Precio ($)</label><input type="number" id="addPre" class="form-control rounded-3"></div><div class="col-6 mb-3"><label class="form-label fw-bold">Stock</label><input type="number" id="addSto" class="form-control rounded-3"></div></div>
+            <button class="btn btn-primary w-100 fw-bold py-3 mt-3 shadow" onclick="guardar()">ENVIAR A LA NUBE</button>
         </div></div>
     </div>
 
     <footer class="text-center">
-        <h4 class="fw-bold">Uriel Zagada Dominguez</h4>
-        <p class="opacity-50">Fullstack Specialist | .NET 8 & PostgreSQL</p>
+        <div class="container">
+            <h5 class="fw-bold mb-1">Elaborado por <span class="text-primary">Uriel Zagada Dominguez</span></h5>
+            <p class="opacity-50 small mb-0">Fullstack Specialist | .NET 8 + Supabase + PostgreSQL</p>
+            <div class="mt-3">
+                <i class="fab fa-github mx-2"></i> <i class="fab fa-linkedin mx-2"></i> <i class="fas fa-terminal mx-2"></i>
+            </div>
+        </div>
     </footer>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let myChart;
+        function toggleLoading(show, text = "Procesando...") {
+            document.getElementById('loadingOverlay').style.display = show ? 'flex' : 'none';
+            document.getElementById('loadingText').innerText = text;
+            if(!show) { document.getElementById('progressBar').style.width = '0%'; document.getElementById('progressPercent').innerText = '0%'; }
+        }
+
         async function load() {
             try {
                 const r = await fetch('/api/productos');
@@ -117,42 +123,68 @@
                 renderTable(data);
                 renderChart(data);
                 updateStatus(true);
-            } catch (e) {
-                updateStatus(false);
-                document.getElementById('lista').innerHTML = '<tr><td colspan="4" class="text-center text-danger fw-bold py-5">ERROR DE CONEXIÓN CON SUPABASE</td></tr>';
-            }
+            } catch (e) { updateStatus(false); }
         }
+
         function updateStatus(on) {
             const d = document.getElementById('dbStatusDot');
             const t = document.getElementById('dbStatusText');
             d.style.backgroundColor = on ? 'var(--success)' : 'var(--danger)';
-            d.style.boxShadow = on ? '0 0 20px var(--success)' : '0 0 20px var(--danger)';
             t.innerText = on ? 'DATABASE: ONLINE' : 'DATABASE: OFFLINE';
             t.style.color = on ? 'var(--success)' : 'var(--danger)';
         }
+
         function renderTable(d) {
             const b = document.getElementById('lista'); b.innerHTML = '';
+            if(d.length === 0) { b.innerHTML = '<tr><td colspan="5" class="text-center py-5 opacity-50">No hay productos sincronizados</td></tr>'; return; }
             d.forEach(p => {
-                b.innerHTML += `<tr><td class="fw-bold">${p.nombre}</td><td class="text-primary fw-bold">$${p.precio}</td><td><span class="badge ${p.stock < 10 ? 'bg-danger' : 'bg-success'} px-3">${p.stock}</span></td><td class="text-end"><button class="btn text-danger" onclick="eliminar('${p.nombre}')"><i class="fas fa-trash"></i></button></td></tr>`;
+                b.innerHTML += `<tr><td class="fw-bold">${p.nombre}</td><td><span class="badge bg-light text-dark border">${p.categoria}</span></td><td class="text-primary fw-bold">$${p.precio}</td><td><span class="badge ${p.stock < 10 ? 'bg-danger' : 'bg-success'} px-3">${p.stock}</span></td><td class="text-end"><button class="btn btn-sm btn-outline-danger border-0" onclick="eliminar('${p.nombre}')"><i class="fas fa-trash"></i></button></td></tr>`;
             });
         }
+
         function renderChart(d) {
             const ctx = document.getElementById('miGrafico').getContext('2d');
             if(myChart) myChart.destroy();
-            myChart = new Chart(ctx, { type: 'doughnut', data: { labels: d.map(x=>x.nombre), datasets: [{ data: d.map(x=>x.stock), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] }] }, options: { plugins: { legend: { display: false } } } });
+            myChart = new Chart(ctx, { type: 'doughnut', data: { labels: d.map(x=>x.nombre), datasets: [{ data: d.map(x=>x.stock), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#06b6d4'], borderWidth: 0 }] }, options: { plugins: { legend: { display: false } }, cutout: '70%' } });
         }
+
         async function guardar() {
-            const p = { nombre: document.getElementById('addNombre').value, categoria: document.getElementById('addCat').value, precio: parseFloat(document.getElementById('addPre').value), stock: parseInt(document.getElementById('addSto').value) };
+            const n = document.getElementById('addNombre').value;
+            if(!n) return alert("El nombre es obligatorio");
+            toggleLoading(true, "Guardando en Supabase...");
+            const p = { nombre: n, categoria: document.getElementById('addCat').value, precio: parseFloat(document.getElementById('addPre').value || 0), stock: parseInt(document.getElementById('addSto').value || 0) };
             await fetch('/api/productos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
             bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide();
-            load();
+            await load();
+            toggleLoading(false);
+            // Limpiar
+            document.getElementById('addNombre').value = ''; document.getElementById('addCat').value = ''; document.getElementById('addPre').value = ''; document.getElementById('addSto').value = '';
         }
-        async function eliminar(n) { if(confirm(`Eliminar ${n}?`)) { await fetch(`/api/productos/${n}`, { method: 'DELETE' }); load(); } }
+
+        async function eliminar(n) { if(confirm(`¿Deseas eliminar ${n} de la nube?`)) { toggleLoading(true, "Borrando..."); await fetch(`/api/productos/${n}`, { method: 'DELETE' }); await load(); toggleLoading(false); } }
+
         async function importar() {
-            const d = new FormData(); d.append('archivo', document.getElementById('fileIn').files[0]);
-            await fetch('/api/productos/importar', { method: 'POST', body: d }); load();
+            const fileIn = document.getElementById('fileIn');
+            if(fileIn.files.length === 0) return;
+            toggleLoading(true, "Subiendo Inventario...");
+            const d = new FormData(); d.append('archivo', fileIn.files[0]);
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', '/api/productos/importar', true);
+            xhr.upload.onprogress = (e) => {
+                if (e.lengthComputable) {
+                    const p = Math.round((e.loaded / e.total) * 100);
+                    document.getElementById('progressBar').style.width = p + '%';
+                    document.getElementById('progressPercent').innerText = p + '%';
+                    if(p === 100) document.getElementById('loadingText').innerText = "Procesando en Servidor...";
+                }
+            };
+            xhr.onload = async () => { await load(); toggleLoading(false); fileIn.value = ''; };
+            xhr.send(d);
         }
+
         function exportar() { window.location.href = '/api/productos/exportar'; }
+        
+        // Iniciar carga al entrar
         load();
     </script>
 </body>

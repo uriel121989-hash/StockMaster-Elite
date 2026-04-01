@@ -3,48 +3,57 @@ using StockMaster.Entidades;
 using Microsoft.EntityFrameworkCore;
 using ClosedXML.Excel;
 
-namespace StockMaster.Negocio
-{
-    public class ProductoService
-    {
+namespace StockMaster.Negocio {
+    public class ProductoService {
         private readonly ApplicationDbContext _context;
         public ProductoService(ApplicationDbContext context) => _context = context;
 
         public async Task<List<Producto>> ObtenerTodos() => await _context.Productos.ToListAsync();
 
-        public async Task Crear(Producto p) {
-            _context.Productos.Add(p);
+        public async Task Guardar(Producto p) {
+            var existente = await _context.Productos.AsNoTracking().FirstOrDefaultAsync(x => x.Nombre == p.Nombre);
+            if (existente != null) _context.Productos.Update(p);
+            else _context.Productos.Add(p);
             await _context.SaveChangesAsync();
         }
 
         public async Task Eliminar(string nombre) {
-            var p = await _context.Productos.FirstOrDefaultAsync(x => x.Nombre == nombre);
+            var p = await _context.Productos.FindAsync(nombre);
             if (p != null) { _context.Productos.Remove(p); await _context.SaveChangesAsync(); }
         }
 
-        public async Task ImportarExcel(Stream s) {
-            using var wb = new XLWorkbook(s);
-            var rows = wb.Worksheet(1).RowsUsed().Skip(1);
-            foreach (var r in rows) {
-                var n = r.Cell(1).GetValue<string>();
-                var p = await _context.Productos.FirstOrDefaultAsync(x => x.Nombre == n);
-                if (p == null) { p = new Producto { Nombre = n }; _context.Productos.Add(p); }
-                p.Categoria = r.Cell(2).GetValue<string>();
-                p.Precio = r.Cell(3).GetValue<decimal>();
-                p.Stock = r.Cell(4).GetValue<int>();
+        public async Task ImportarExcel(Stream stream) {
+            using var workbook = new XLWorkbook(stream);
+            var sheet = workbook.Worksheet(1);
+            var rows = sheet.RangeUsed().RowsUsed().Skip(1);
+            foreach (var row in rows) {
+                var p = new Producto {
+                    Nombre = row.Cell(1).GetString(),
+                    Categoria = row.Cell(2).GetString(),
+                    Precio = row.Cell(3).GetValue<decimal>(),
+                    Stock = row.Cell(4).GetValue<int>()
+                };
+                await Guardar(p);
             }
-            await _context.SaveChangesAsync();
         }
 
-        public byte[] ExportarExcel(List<Producto> l) {
-            using var b = new XLWorkbook();
-            var h = b.Worksheets.Add("Inventario");
-            h.Cell(1,1).Value="Nombre"; h.Cell(1,2).Value="Categoria"; h.Cell(1,3).Value="Precio"; h.Cell(1,4).Value="Stock";
-            for(int i=0; i<l.Count; i++) {
-                h.Cell(i+2,1).Value=l[i].Nombre; h.Cell(i+2,2).Value=l[i].Categoria;
-                h.Cell(i+2,3).Value=l[i].Precio; h.Cell(i+2,4).Value=l[i].Stock;
+        public async Task<byte[]> ExportarExcel() {
+            using var workbook = new XLWorkbook();
+            var sheet = workbook.Worksheets.Add("Inventario");
+            sheet.Cell(1, 1).Value = "Nombre";
+            sheet.Cell(1, 2).Value = "Categoría";
+            sheet.Cell(1, 3).Value = "Precio";
+            sheet.Cell(1, 4).Value = "Stock";
+            var productos = await ObtenerTodos();
+            for (int i = 0; i < productos.Count; i++) {
+                sheet.Cell(i + 2, 1).Value = productos[i].Nombre;
+                sheet.Cell(i + 2, 2).Value = productos[i].Categoria;
+                sheet.Cell(i + 2, 3).Value = productos[i].Precio;
+                sheet.Cell(i + 2, 4).Value = productos[i].Stock;
             }
-            using var ms = new MemoryStream(); b.SaveAs(ms); return ms.ToArray();
+            using var ms = new MemoryStream();
+            workbook.SaveAs(ms);
+            return ms.ToArray();
         }
     }
 }
