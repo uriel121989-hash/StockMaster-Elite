@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+Ôªø<!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
@@ -7,198 +7,146 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js">        async function checkStatus() {
-            try {
-                const res = await fetch('/api/productos');
-                if (res.ok) {
-                    document.getElementById('dbStatusDot').className = 'badge rounded-circle bg-success p-1';
-                    document.getElementById('dbStatusDot').style.width = '10px';
-                    document.getElementById('dbStatusDot').style.height = '10px';
-                    document.getElementById('dbStatusText').innerText = 'Servidor: Conectado';
-                    document.getElementById('dbStatusText').className = 'small text-success fw-bold';
-                }
-            } catch (e) {
-                document.getElementById('dbStatusDot').className = 'badge rounded-circle bg-danger p-1';
-                document.getElementById('dbStatusText').innerText = 'Servidor: Error de Red';
-                document.getElementById('dbStatusText').className = 'small text-danger fw-bold';
-            }
-        }
-        setInterval(checkStatus, 5000);
-        checkStatus();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --primary: #3b82f6; --dark: #0f172a; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
-        .navbar { background: var(--dark); border-bottom: 4px solid var(--primary); }
-        .card-custom { background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 25px; height: 100%; }
-        .btn-add { background: var(--primary); color: white; border-radius: 12px; font-weight: 600; padding: 12px 24px; border: none; }
-        .btn-add:hover { background: #2563eb; color: white; }
-        footer { background: var(--dark); color: #94a3b8; padding: 3rem 0; margin-top: 5rem; }
+        :root { --primary: #3b82f6; --dark: #0f172a; --success: #00ff88; --danger: #ff0055; --warning: #ffcc00; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f0f4f8; color: #1e293b; }
+        .navbar { background: var(--dark); border-bottom: 4px solid var(--primary); padding: 15px 0; }
+        
+        /* SEM√ÅFORO ESTILO NE√ìN - IMPOSIBLE DE NO VER */
+        .status-box {
+            display: flex !important;
+            align-items: center;
+            background: #000;
+            padding: 10px 25px;
+            border-radius: 50px;
+            border: 2px solid var(--primary);
+            box-shadow: 0 0 15px var(--primary);
+        }
+        .neon-dot {
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            margin-right: 15px;
+            box-shadow: 0 0 10px white;
+        }
+        .status-label { font-size: 0.9rem; font-weight: 900; letter-spacing: 2px; }
+
+        .card-custom { background: white; border-radius: 25px; border: none; padding: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .btn-add { background: var(--primary); color: white; border-radius: 15px; font-weight: 700; padding: 12px 25px; border: none; transition: 0.3s; }
+        .btn-add:hover { background: #2563eb; transform: scale(1.05); }
+        footer { background: var(--dark); color: white; padding: 2rem 0; margin-top: 5rem; border-top: 5px solid var(--primary); }
     </style>
 </head>
 <body>
-    <nav class="navbar navbar-dark p-3 sticky-top">
+
+    <nav class="navbar navbar-dark sticky-top">
         <div class="container d-flex justify-content-between align-items-center">
-            <span class="navbar-brand fw-bold fs-4"><i class="fas fa-chart-pie text-primary me-2"></i>STOCKMASTER <span class="text-primary">ELITE</span></span>
-            <span class="badge bg-primary px-3 py-2 rounded-pill">Developer: Uriel Zagada Dominguez</span>
+            <a class="navbar-brand fw-bold fs-3" href="#"><i class="fas fa-bolt text-primary"></i> ELITE</a>
+            
+            <!-- EL SEM√ÅFORO EN EL CENTRO -->
+            <div class="status-box">
+                <div id="dbStatusDot" class="neon-dot" style="background-color: var(--warning);"></div>
+                <span id="dbStatusText" class="status-label" style="color: var(--warning);">VERIFICANDO...</span>
+            </div>
+
+            <span class="badge bg-primary p-2 d-none d-md-block">Uriel Zagada Dominguez</span>
         </div>
     </nav>
 
     <div class="container mt-5">
-        <div class="row g-4 mb-4">
+        <div class="row g-4">
             <div class="col-lg-8">
-                <div class="card-custom shadow-sm">
+                <div class="card-custom">
                     <div class="d-flex justify-content-between align-items-center mb-4">
-                        <h4 class="fw-bold mb-0">Listado de Inventario</h4>
+                        <h3 class="fw-bold m-0">Inventario Cloud</h3>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-add shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAdd">
-                                <i class="fas fa-plus me-2"></i>Nuevo Producto
-                            </button>
-                            <button class="btn btn-success fw-bold rounded-3" onclick="exportar()">
-                                <i class="fas fa-file-excel"></i>
-                            </button>
+                            <button class="btn btn-add" data-bs-toggle="modal" data-bs-target="#modalAdd"><i class="fas fa-plus"></i></button>
+                            <button class="btn btn-success rounded-3 text-white" onclick="exportar()"><i class="fas fa-download"></i></button>
                         </div>
                     </div>
                     <div class="table-responsive">
                         <table class="table align-middle">
                             <thead class="table-light">
-                                <tr><th>Nombre</th><th>Precio</th><th>Stock</th><th class="text-end">AcciÛn</th></tr>
+                                <tr><th>Producto</th><th>Precio</th><th>Stock</th><th class="text-end">Acci√≥n</th></tr>
                             </thead>
-                            <tbody id="lista"></tbody>
+                            <tbody id="lista">
+                                <tr><td colspan="4" class="text-center py-5">Cargando...</td></tr>
+                            </tbody>
                         </table>
                     </div>
                 </div>
             </div>
             <div class="col-lg-4">
-                <div class="card-custom shadow-sm text-center">
-                    <h5 class="fw-bold mb-4 text-secondary">DistribuciÛn de Stock</h5>
+                <div class="card-custom text-center">
+                    <h5 class="fw-bold mb-4">STOCK VISUAL</h5>
                     <canvas id="miGrafico"></canvas>
                     <hr>
+                    <button class="btn btn-outline-primary w-100 fw-bold" onclick="document.getElementById('fileIn').click()">IMPORTAR EXCEL</button>
                     <input type="file" id="fileIn" hidden onchange="importar()">
-                    <button class="btn btn-outline-primary w-100 fw-bold" onclick="document.getElementById('fileIn').click()">
-                        <i class="fas fa-upload me-2"></i>Importar desde Excel
-                    </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- MODAL PARA AGREGAR PRODUCTO -->
+    <!-- MODAL -->
     <div class="modal fade" id="modalAdd" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0" style="border-radius: 20px;">
-                <div class="modal-header border-0">
-                    <h5 class="fw-bold mb-0">Agregar Nuevo Producto</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Nombre</label>
-                        <input type="text" id="addNombre" class="form-control rounded-3" placeholder="Ej: Inversor 5kW">
-                    </div>
-                    <div class="row">
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-bold">CategorÌa</label>
-                            <input type="text" id="addCat" class="form-control rounded-3" placeholder="Ej: EnergÌa">
-                        </div>
-                        <div class="col-md-6 mb-3">
-                            <label class="form-label small fw-bold">Precio ($)</label>
-                            <input type="number" id="addPre" class="form-control rounded-3" placeholder="0.00">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label small fw-bold">Stock Inicial</label>
-                        <input type="number" id="addSto" class="form-control rounded-3" placeholder="0">
-                    </div>
-                </div>
-                <div class="modal-footer border-0">
-                    <button class="btn btn-add w-100" onclick="guardar()">Guardar en la Nube</button>
-                </div>
-            </div>
-        </div>
+        <div class="modal-dialog modal-dialog-centered"><div class="modal-content p-4 border-0" style="border-radius: 30px;">
+            <h4 class="fw-bold mb-4">Nuevo Producto</h4>
+            <input type="text" id="addNombre" class="form-control mb-3" placeholder="Nombre">
+            <input type="text" id="addCat" class="form-control mb-3" placeholder="Categor√≠a">
+            <input type="number" id="addPre" class="form-control mb-3" placeholder="Precio">
+            <input type="number" id="addSto" class="form-control mb-3" placeholder="Stock">
+            <button class="btn btn-add w-100" onclick="guardar()">GUARDAR</button>
+        </div></div>
     </div>
 
     <footer class="text-center">
-        <div class="container">
-            <h5 class="text-white fw-bold">Uriel Zagada Dominguez</h5>
-            <p>Fullstack .NET Specialist | Cloud Data Systems</p>
-        </div>
+        <h4 class="fw-bold">Uriel Zagada Dominguez</h4>
+        <p class="opacity-50">Fullstack Specialist | .NET 8 & PostgreSQL</p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">        async function checkStatus() {
-            try {
-                const res = await fetch('/api/productos');
-                if (res.ok) {
-                    document.getElementById('dbStatusDot').className = 'badge rounded-circle bg-success p-1';
-                    document.getElementById('dbStatusDot').style.width = '10px';
-                    document.getElementById('dbStatusDot').style.height = '10px';
-                    document.getElementById('dbStatusText').innerText = 'Servidor: Conectado';
-                    document.getElementById('dbStatusText').className = 'small text-success fw-bold';
-                }
-            } catch (e) {
-                document.getElementById('dbStatusDot').className = 'badge rounded-circle bg-danger p-1';
-                document.getElementById('dbStatusText').innerText = 'Servidor: Error de Red';
-                document.getElementById('dbStatusText').className = 'small text-danger fw-bold';
-            }
-        }
-        setInterval(checkStatus, 5000);
-        checkStatus();
-    </script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         let myChart;
         async function load() {
-            const r = await fetch('/api/productos');
-            const data = await r.json();
-            renderTable(data);
-            renderChart(data);
+            try {
+                const r = await fetch('/api/productos');
+                if(!r.ok) throw new Error();
+                const data = await r.json();
+                renderTable(data);
+                renderChart(data);
+                updateStatus(true);
+            } catch (e) {
+                updateStatus(false);
+                document.getElementById('lista').innerHTML = '<tr><td colspan="4" class="text-center text-danger fw-bold py-5">ERROR DE CONEXI√ìN CON SUPABASE</td></tr>';
+            }
         }
-
-        function renderTable(data) {
+        function updateStatus(on) {
+            const d = document.getElementById('dbStatusDot');
+            const t = document.getElementById('dbStatusText');
+            d.style.backgroundColor = on ? 'var(--success)' : 'var(--danger)';
+            d.style.boxShadow = on ? '0 0 20px var(--success)' : '0 0 20px var(--danger)';
+            t.innerText = on ? 'DATABASE: ONLINE' : 'DATABASE: OFFLINE';
+            t.style.color = on ? 'var(--success)' : 'var(--danger)';
+        }
+        function renderTable(d) {
             const b = document.getElementById('lista'); b.innerHTML = '';
-            data.forEach(p => {
-                b.innerHTML += `<tr>
-                    <td class="fw-bold text-dark">${p.nombre}</td>
-                    <td class="fw-bold text-primary">$${p.precio.toLocaleString()}</td>
-                    <td><span class="badge ${p.stock < 10 ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'} fs-6">${p.stock}</span></td>
-                    <td class="text-end">
-                        <button class="btn text-danger" onclick="eliminar('${p.nombre}')"><i class="fas fa-trash"></i></button>
-                    </td>
-                </tr>`;
+            d.forEach(p => {
+                b.innerHTML += `<tr><td class="fw-bold">${p.nombre}</td><td class="text-primary fw-bold">$${p.precio}</td><td><span class="badge ${p.stock < 10 ? 'bg-danger' : 'bg-success'} px-3">${p.stock}</span></td><td class="text-end"><button class="btn text-danger" onclick="eliminar('${p.nombre}')"><i class="fas fa-trash"></i></button></td></tr>`;
             });
         }
-
-        function renderChart(data) {
+        function renderChart(d) {
             const ctx = document.getElementById('miGrafico').getContext('2d');
             if(myChart) myChart.destroy();
-            myChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: data.map(p => p.nombre),
-                    datasets: [{
-                        data: data.map(p => p.stock),
-                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
-                    }]
-                },
-                options: { plugins: { legend: { display: false } } }
-            });
+            myChart = new Chart(ctx, { type: 'doughnut', data: { labels: d.map(x=>x.nombre), datasets: [{ data: d.map(x=>x.stock), backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6'] }] }, options: { plugins: { legend: { display: false } } } });
         }
-
         async function guardar() {
-            const p = {
-                nombre: document.getElementById('addNombre').value,
-                categoria: document.getElementById('addCat').value,
-                precio: parseFloat(document.getElementById('addPre').value),
-                stock: parseInt(document.getElementById('addSto').value)
-            };
-            await fetch('/api/productos', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(p)
-            });
+            const p = { nombre: document.getElementById('addNombre').value, categoria: document.getElementById('addCat').value, precio: parseFloat(document.getElementById('addPre').value), stock: parseInt(document.getElementById('addSto').value) };
+            await fetch('/api/productos', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(p) });
             bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide();
             load();
         }
-
         async function eliminar(n) { if(confirm(`Eliminar ${n}?`)) { await fetch(`/api/productos/${n}`, { method: 'DELETE' }); load(); } }
         async function importar() {
             const d = new FormData(); d.append('archivo', document.getElementById('fileIn').files[0]);
@@ -206,25 +154,6 @@
         }
         function exportar() { window.location.href = '/api/productos/exportar'; }
         load();
-            async function checkStatus() {
-            try {
-                const res = await fetch('/api/productos');
-                if (res.ok) {
-                    document.getElementById('dbStatusDot').className = 'badge rounded-circle bg-success p-1';
-                    document.getElementById('dbStatusDot').style.width = '10px';
-                    document.getElementById('dbStatusDot').style.height = '10px';
-                    document.getElementById('dbStatusText').innerText = 'Servidor: Conectado';
-                    document.getElementById('dbStatusText').className = 'small text-success fw-bold';
-                }
-            } catch (e) {
-                document.getElementById('dbStatusDot').className = 'badge rounded-circle bg-danger p-1';
-                document.getElementById('dbStatusText').innerText = 'Servidor: Error de Red';
-                document.getElementById('dbStatusText').className = 'small text-danger fw-bold';
-            }
-        }
-        setInterval(checkStatus, 5000);
-        checkStatus();
     </script>
 </body>
 </html>
-
