@@ -1,0 +1,175 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StockMaster Elite | Uriel Zagada Dominguez</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root { --primary: #3b82f6; --dark: #0f172a; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; }
+        .navbar { background: var(--dark); border-bottom: 4px solid var(--primary); }
+        .card-custom { background: white; border-radius: 20px; border: 1px solid #e2e8f0; padding: 25px; height: 100%; }
+        .btn-add { background: var(--primary); color: white; border-radius: 12px; font-weight: 600; padding: 12px 24px; border: none; }
+        .btn-add:hover { background: #2563eb; color: white; }
+        footer { background: var(--dark); color: #94a3b8; padding: 3rem 0; margin-top: 5rem; }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-dark p-3 sticky-top">
+        <div class="container d-flex justify-content-between align-items-center">
+            <span class="navbar-brand fw-bold fs-4"><i class="fas fa-chart-pie text-primary me-2"></i>STOCKMASTER <span class="text-primary">ELITE</span></span>
+            <span class="badge bg-primary px-3 py-2 rounded-pill">Developer: Uriel Zagada Dominguez</span>
+        </div>
+    </nav>
+
+    <div class="container mt-5">
+        <div class="row g-4 mb-4">
+            <div class="col-lg-8">
+                <div class="card-custom shadow-sm">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <h4 class="fw-bold mb-0">Listado de Inventario</h4>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-add shadow-sm" data-bs-toggle="modal" data-bs-target="#modalAdd">
+                                <i class="fas fa-plus me-2"></i>Nuevo Producto
+                            </button>
+                            <button class="btn btn-success fw-bold rounded-3" onclick="exportar()">
+                                <i class="fas fa-file-excel"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table align-middle">
+                            <thead class="table-light">
+                                <tr><th>Nombre</th><th>Precio</th><th>Stock</th><th class="text-end">Acción</th></tr>
+                            </thead>
+                            <tbody id="lista"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4">
+                <div class="card-custom shadow-sm text-center">
+                    <h5 class="fw-bold mb-4 text-secondary">Distribución de Stock</h5>
+                    <canvas id="miGrafico"></canvas>
+                    <hr>
+                    <input type="file" id="fileIn" hidden onchange="importar()">
+                    <button class="btn btn-outline-primary w-100 fw-bold" onclick="document.getElementById('fileIn').click()">
+                        <i class="fas fa-upload me-2"></i>Importar desde Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL PARA AGREGAR PRODUCTO -->
+    <div class="modal fade" id="modalAdd" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0" style="border-radius: 20px;">
+                <div class="modal-header border-0">
+                    <h5 class="fw-bold mb-0">Agregar Nuevo Producto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Nombre</label>
+                        <input type="text" id="addNombre" class="form-control rounded-3" placeholder="Ej: Inversor 5kW">
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Categoría</label>
+                            <input type="text" id="addCat" class="form-control rounded-3" placeholder="Ej: Energía">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label small fw-bold">Precio ($)</label>
+                            <input type="number" id="addPre" class="form-control rounded-3" placeholder="0.00">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">Stock Inicial</label>
+                        <input type="number" id="addSto" class="form-control rounded-3" placeholder="0">
+                    </div>
+                </div>
+                <div class="modal-footer border-0">
+                    <button class="btn btn-add w-100" onclick="guardar()">Guardar en la Nube</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <footer class="text-center">
+        <div class="container">
+            <h5 class="text-white fw-bold">Uriel Zagada Dominguez</h5>
+            <p>Fullstack .NET Specialist | Cloud Data Systems</p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let myChart;
+        async function load() {
+            const r = await fetch('/api/productos');
+            const data = await r.json();
+            renderTable(data);
+            renderChart(data);
+        }
+
+        function renderTable(data) {
+            const b = document.getElementById('lista'); b.innerHTML = '';
+            data.forEach(p => {
+                b.innerHTML += `<tr>
+                    <td class="fw-bold text-dark">${p.nombre}</td>
+                    <td class="fw-bold text-primary">$${p.precio.toLocaleString()}</td>
+                    <td><span class="badge ${p.stock < 10 ? 'bg-danger-subtle text-danger' : 'bg-success-subtle text-success'} fs-6">${p.stock}</span></td>
+                    <td class="text-end">
+                        <button class="btn text-danger" onclick="eliminar('${p.nombre}')"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+        }
+
+        function renderChart(data) {
+            const ctx = document.getElementById('miGrafico').getContext('2d');
+            if(myChart) myChart.destroy();
+            myChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: data.map(p => p.nombre),
+                    datasets: [{
+                        data: data.map(p => p.stock),
+                        backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899']
+                    }]
+                },
+                options: { plugins: { legend: { display: false } } }
+            });
+        }
+
+        async function guardar() {
+            const p = {
+                nombre: document.getElementById('addNombre').value,
+                categoria: document.getElementById('addCat').value,
+                precio: parseFloat(document.getElementById('addPre').value),
+                stock: parseInt(document.getElementById('addSto').value)
+            };
+            await fetch('/api/productos', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(p)
+            });
+            bootstrap.Modal.getInstance(document.getElementById('modalAdd')).hide();
+            load();
+        }
+
+        async function eliminar(n) { if(confirm(`Eliminar ${n}?`)) { await fetch(`/api/productos/${n}`, { method: 'DELETE' }); load(); } }
+        async function importar() {
+            const d = new FormData(); d.append('archivo', document.getElementById('fileIn').files[0]);
+            await fetch('/api/productos/importar', { method: 'POST', body: d }); load();
+        }
+        function exportar() { window.location.href = '/api/productos/exportar'; }
+        load();
+    </script>
+</body>
+</html>
